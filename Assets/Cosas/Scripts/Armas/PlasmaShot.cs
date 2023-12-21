@@ -9,7 +9,7 @@ public class PlasmaShot : MonoBehaviour
     public ParticleSystem impactParticles; // Sistema de partículas para impacto
     public float shotForce = 1500f; // Fuerza de disparo
     public float shotRate = 0.5f; // Tiempo de espera en cada disparo
-    public float liftForce = 500f; // Fuerza para levantar objetos
+    public float attractionForce = 200f; // Fuerza de atracción hacia el centro
     public string interactableTag = "Interactable"; // Tag del objeto interactuable
 
     private float shotRateTime = 0f;
@@ -17,57 +17,51 @@ public class PlasmaShot : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        // Verificar si se presionó el botón izquierdo del mouse
         if (Input.GetKeyDown(KeyCode.Mouse0))
         {
-            // Verificar si ha pasado suficiente tiempo desde el último disparo
             if (Time.time > shotRateTime)
             {
-                // Instanciar un nuevo proyectil en el spawnPoint
                 GameObject newBullet = Instantiate(bullet, spawnPoint.position, spawnPoint.rotation);
                 Rigidbody newBulletRb = newBullet.GetComponent<Rigidbody>();
-                
-                // Aplicar una fuerza al proyectil en la dirección hacia adelante
                 newBulletRb.AddForce(spawnPoint.forward * shotForce);
 
-                // Iniciar la corrutina para interactuar con objetos después de un tiempo
-                StartCoroutine(InteractWithObjects(newBullet));
+                InteractWithObjects(newBullet);
 
-                // Actualizar el tiempo del último disparo
                 shotRateTime = Time.time + shotRate;
             }
         }
     }
 
-    // Corrutina para interactuar con objetos después de un tiempo
-    IEnumerator InteractWithObjects(GameObject newBullet)
+    void InteractWithObjects(GameObject newBullet)
     {
-        // Esperar 0.5 segundos
-        yield return new WaitForSeconds(0.5f);
+        float waitTime = 0.5f;
+        StartCoroutine(AttractObjects(newBullet, waitTime));
 
-        // Encontrar objetos cercanos al proyectil
+        // Resto del código...
+    }
+
+    IEnumerator AttractObjects(GameObject newBullet, float waitTime)
+    {
+        yield return new WaitForSeconds(waitTime);
+
         Collider[] colliders = Physics.OverlapSphere(newBullet.transform.position, 5f);
 
-        // Iterar sobre los objetos cercanos
         foreach (Collider collider in colliders)
         {
-            // Verificar si el objeto tiene la etiqueta "Interactable"
             if (collider.CompareTag(interactableTag))
             {
-                // Obtener el Rigidbody del objeto
                 Rigidbody rb = collider.GetComponent<Rigidbody>();
 
-                // Verificar si el objeto tiene un Rigidbody
                 if (rb != null)
                 {
-                    // Aplicar una fuerza hacia arriba al objeto
-                    rb.AddForce(Vector3.up * liftForce);
+                    // Calcular la dirección hacia el centro de la bala
+                    Vector3 directionToBullet = (newBullet.transform.position - collider.transform.position).normalized;
 
                     // Desactivar la gravedad del objeto para que se mantenga levitando
                     rb.useGravity = false;
 
-                    // Desactivar la detección de colisiones para evitar problemas con otros objetos
-                    rb.detectCollisions = false;
+                    // Aplicar una fuerza de atracción hacia el centro
+                    rb.AddForce(directionToBullet * attractionForce);
 
                     // Iniciar la corrutina para reactivar la gravedad y detección de colisiones después de 5 segundos
                     StartCoroutine(ReactivateGravityAndCollisions(rb, 5f));

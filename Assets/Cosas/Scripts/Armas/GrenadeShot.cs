@@ -32,7 +32,7 @@ public class GrenadeShot : MonoBehaviour
                 // Aplicar una fuerza al proyectil en la dirección hacia adelante
                 newgrenadePrefabRb.AddForce(spawnPoint.forward * shotForce);
 
-                // Iniciar la corrutina para interactuar con objetos después de un tiempo
+                // Verificar la interacción con objetos después de un tiempo
                 StartCoroutine(DelayExplosion(newgrenadePrefab));
 
                 // Actualizar el tiempo del último disparo
@@ -45,17 +45,30 @@ public class GrenadeShot : MonoBehaviour
     {
         yield return new WaitForSeconds(timeToExplode);
 
-        Collider[] colliders = Physics.OverlapSphere(transform.position, radius);
+        // Obtener objetos cercanos al proyectil
+        Collider[] colliders = Physics.OverlapSphere(newgrenadePrefab.transform.position, radius);
 
-        foreach(Collider hit in colliders)
+        // Variable para determinar si hubo interacción con un objeto "Interactable"
+        bool interacted = false;
+
+        foreach (Collider hit in colliders)
         {
-            Rigidbody rb = hit.GetComponent<Rigidbody>();
-
-            if(rb != null)
+            if (hit.CompareTag("Interactable"))
             {
-                rb.AddExplosionForce(power, transform.position, radius, upForce);
-            }
+                Rigidbody rb = hit.GetComponent<Rigidbody>();
 
+                if (rb != null)
+                {
+                    // Aplicar fuerza de explosión solo si es un objeto "Interactable"
+                    rb.AddExplosionForce(power, newgrenadePrefab.transform.position, radius, upForce);
+                    interacted = true;
+                }
+            }
+        }
+
+        // Si hubo interacción, realizar la explosión
+        if (interacted)
+        {
             // Activar el sistema de partículas en la posición del impacto
             if (impactParticles != null)
             {
@@ -64,8 +77,15 @@ public class GrenadeShot : MonoBehaviour
 
                 // Destruir las partículas después de un tiempo determinado (ajusta según sea necesario)
                 Destroy(instantiatedParticles.gameObject, 2f);
-                Destroy(newgrenadePrefab);
             }
+
+            // Destruir el objeto de la granada
+            Destroy(newgrenadePrefab);
+        }
+        else
+        {
+            // Si no hubo interacción, simplemente destruir la granada sin causar explosión
+            Destroy(newgrenadePrefab);
         }
     }
 }
