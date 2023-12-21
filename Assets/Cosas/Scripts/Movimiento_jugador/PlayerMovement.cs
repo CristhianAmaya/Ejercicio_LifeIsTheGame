@@ -13,10 +13,11 @@ public class PlayerMovement : MonoBehaviour
     bool isGrounded;
     Vector3 velocity;
     public float jumpHeight = 3f;
+    private Animator anim;
     // Start is called before the first frame update
     void Start()
     {
-        
+        anim = GetComponent<Animator>();
     }
 
     // Update is called once per frame
@@ -44,5 +45,8 @@ public class PlayerMovement : MonoBehaviour
         
         characterController.Move(move * speed * Time.deltaTime);
         characterController.Move(velocity * Time.deltaTime);
+
+        anim.SetFloat("VelX", x);
+        anim.SetFloat("VelY", z);
     }
 }
