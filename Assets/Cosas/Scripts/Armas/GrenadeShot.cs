@@ -55,7 +55,17 @@ public class GrenadeShot : MonoBehaviour
             {
                 rb.AddExplosionForce(power, transform.position, radius, upForce);
             }
+
+            // Activar el sistema de partículas en la posición del impacto
+            if (impactParticles != null)
+            {
+                // Instanciar el sistema de partículas
+                ParticleSystem instantiatedParticles = Instantiate(impactParticles, newgrenadePrefab.transform.position, Quaternion.identity);
+
+                // Destruir las partículas después de un tiempo determinado (ajusta según sea necesario)
+                Destroy(instantiatedParticles.gameObject, 2f);
+                Destroy(newgrenadePrefab);
+            }
         }
-        Destroy(newgrenadePrefab);
     }
 }

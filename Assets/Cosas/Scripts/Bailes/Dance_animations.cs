@@ -6,17 +6,28 @@ using UnityEngine.SceneManagement;
 public class Dance_animations : MonoBehaviour
 {
     // Variables para guardar los menus canvas
-    public GameObject menu1, menu2, menu3;
+    public GameObject menu1, menu2;
     // Referencia al componente Animator del GameObject
     private Animator animate;
 
     // Define los nombres de las animaciones en un array
     private string[] animationNames = { "House_Dance", "Macarena_Dance", "Hip Hop_Dance" };
 
+    // GameManager para compartir valores entre escenas
+    private Game_Manager gameManager;
+
     void Start()
     {
         // Obtener el componente Animator del GameObject actual
         animate = gameObject.GetComponent<Animator>();
+
+        // Obtener el GameManager donde se podrán compartir los valores a un script de otra escena
+        gameManager = FindObjectOfType<Game_Manager>();
+        if (gameManager == null)
+        {
+            GameObject gameManagerObject = new GameObject("Game_Manager");
+            gameManager = gameManagerObject.AddComponent<Game_Manager>();
+        }
     }
 
     // Método para iniciar animaciones según el índice proporcionado por los botones
@@ -38,10 +49,16 @@ public class Dance_animations : MonoBehaviour
     // Método funcional para el segundo menú
     public void animation_start2(int valor)
     {
-        // Se le envía el valor a la primera función animation_Start
-        animation_start(valor);
-        // Se activa el menú 3
-        menu3.SetActive(true);
+        // Establecer el valor compartido
+        if (gameManager != null)
+        {
+            SceneManager.LoadScene("Juego");
+            gameManager.valorCompartido = valor;
+        }
+        else
+        {
+            Debug.LogError("Game_Manager no encontrado.");
+        }
     }
 
     // Método para abrir el segundo menú canvas del 4to botón
@@ -50,11 +67,5 @@ public class Dance_animations : MonoBehaviour
         // Activa y desactiva el menú 1 y 2 
         menu1.SetActive(false);
         menu2.SetActive(true);
-    }
-
-    // Método para cambiar de escena
-    public void change_Scenes()
-    {
-        SceneManager.LoadScene("Juego");
     }
 }
