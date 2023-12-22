@@ -13,11 +13,15 @@ public class Dance_animations : MonoBehaviour
     // Define los nombres de las animaciones en un array
     private string[] animationNames = { "House_Dance", "Macarena_Dance", "Hip Hop_Dance" };
 
+    public AudioClip[] clipsAudio;
+    private AudioSource audioSource;
+
     // GameManager para compartir valores entre escenas
     private Game_Manager gameManager;
 
     void Start()
     {
+        audioSource = GetComponent<AudioSource>();
         // Obtener el componente Animator del GameObject actual
         animate = gameObject.GetComponent<Animator>();
 
@@ -38,6 +42,17 @@ public class Dance_animations : MonoBehaviour
         {
             // Establece el trigger de la animación usando el nombre del array
             animate.SetTrigger(animationNames[anime]);
+
+            // Asigna el clip al AudioSource y reproduce
+            if (anime < clipsAudio.Length)
+            {
+                audioSource.clip = clipsAudio[anime];
+                audioSource.Play();
+            }
+            else
+            {
+                Debug.LogError("Índice de audio fuera de rango");
+            }
         }
         else
         {
